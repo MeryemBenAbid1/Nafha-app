@@ -47,6 +47,7 @@ create table devices (
   public_key text not null,              -- P-256 public key, hex. From the ATECC608, or make-device-key.mjs
   last_counter integer not null default -1,  -- the highest counter seen, so an old record can't be replayed
   active_lot_code text references lots,  -- the lot the technician is testing right now
+  chain_tx text,                         -- transaction that registered this key on chain
   created_at timestamptz not null default now()
 );
 
@@ -86,12 +87,40 @@ create table verdicts (
   created_at timestamptz not null default now()
 );
 
+create table batches (
+  id text primary key,                   -- batchId on chain (bytes32 hex)
+  label text,
+  root text not null,                    -- Merkle root anchored on chain
+  leaf_count integer not null,
+  tx_hash text not null,
+  chain_id integer not null,
+  created_at timestamptz not null default now()
+);
+
 create table certificates (
   id text primary key,                   -- short code in the QR link: /c/<id>
   verdict_id uuid not null references verdicts on delete cascade,
   lot_code text references lots,
-  batch_root text,                       -- filled in when the batch is anchored on chain
+  body jsonb,                            -- the certificate itself (W3C credential shape); its hash is in the leaf
+  batch_id text references batches,      -- filled in when the batch is anchored on chain
+  batch_root text,
+  proof jsonb,                           -- Merkle proof for this certificate under the batch root
   anchor_tx text,                        -- the transaction hash of that anchor
+  created_at timestamptz not null default now()
+);
+
+-- NFC seals (NTAG 424 DNA). Each tap gives a new counter; we keep the highest so a copied link fails.
+create table nfc_tags (
+  uid text primary key,                  -- 7-byte tag UID, hex, upper case
+  lot_code text not null references lots,
+  last_counter integer not null default -1,
+  created_at timestamptz not null default now()
+);
+
+create table seal_taps (
+  id text primary key,                   -- random, passed to the certificate page after a good tap
+  uid text not null references nfc_tags,
+  counter integer not null,
   created_at timestamptz not null default now()
 );
 
@@ -115,6 +144,9 @@ alter table nonces enable row level security;
 alter table readings enable row level security;
 alter table verdicts enable row level security;
 alter table certificates enable row level security;
+alter table batches enable row level security;
+alter table nfc_tags enable row level security;
+alter table seal_taps enable row level security;
 alter table reference_library enable row level security;
 
 create policy "staff read" on profiles for select to authenticated using (true);
@@ -123,6 +155,8 @@ create policy "staff read" on devices for select to authenticated using (true);
 create policy "staff read" on readings for select to authenticated using (true);
 create policy "staff read" on verdicts for select to authenticated using (true);
 create policy "staff read" on certificates for select to authenticated using (true);
+create policy "staff read" on batches for select to authenticated using (true);
+create policy "staff read" on nfc_tags for select to authenticated using (true);
 create policy "staff read" on reference_library for select to authenticated using (true);
 
 -- Live updates on the technician screen.

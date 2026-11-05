@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkShape, recordHash, verifyRecord, type DeviceRecord } from "@/lib/record";
 import { classify } from "@/lib/classifier";
-import { shortId } from "@/lib/auth";
+import { issueCertificate } from "@/lib/issue";
 
 export async function POST(req: Request) {
   let record: DeviceRecord;
@@ -83,8 +83,9 @@ export async function POST(req: Request) {
   // Unknown results wait for an expert before anyone gets a certificate.
   let certificateUrl: string | null = null;
   if (result.verdict !== "UNKNOWN" && !result.needsReview && result.certifiable !== false) {
-    const id = shortId();
-    await db.from("certificates").insert({ id, verdict_id: verdict.id, lot_code: reading.lot_code });
+    const id = await issueCertificate(db, {
+      verdictId: verdict.id, verdict: result.verdict, modelVersion: result.modelVersion, record, lotCode: reading.lot_code,
+    });
     certificateUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/c/${id}`;
   }
 

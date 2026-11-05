@@ -16,3 +16,12 @@ export async function createLot(formData: FormData) {
   });
   revalidatePath("/brand");
 }
+
+// Link an NFC seal to a lot. The UID is printed by NXP TagXplorer/TagWriter when you program the tag.
+export async function linkSeal(formData: FormData) {
+  await requireRole("brand");
+  const uid = String(formData.get("uid")).replace(/[^0-9a-fA-F]/g, "").toUpperCase();
+  if (uid.length !== 14) return;
+  await createAdminClient().from("nfc_tags").upsert({ uid, lot_code: String(formData.get("lotCode")) });
+  revalidatePath("/brand");
+}

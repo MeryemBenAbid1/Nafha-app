@@ -37,6 +37,32 @@ ready, it sends the same record to the same address and nothing in the app chang
 To open it on your phone during development, run `npm run dev -- -H 0.0.0.0` and visit
 `http://<your-laptop-ip>:3000` on the same Wi-Fi. Set `NEXT_PUBLIC_APP_URL` to that address so QR codes point there.
 
+## Blockchain (works now on a local chain)
+
+1. In `nafha-chain`: `npm install`, then `npm run node` in one terminal and `npm run deploy:local` in another
+   (add `USE_SOLCJS=1` in front if the compiler download is blocked). The contract address is printed.
+2. In `.env.local`: `NEXT_PUBLIC_CHAIN_ID=31337`, `NEXT_PUBLIC_CHAIN_RPC_URL=http://127.0.0.1:8545`,
+   `NEXT_PUBLIC_ANCHOR_CONTRACT=<NafhaAnchor address>`, and `ANCHOR_PRIVATE_KEY` = Hardhat's account #0 key
+   (printed by `npm run node`; it's a public test key).
+3. Make your account admin (Supabase table editor → profiles → role = admin). On the technician screen press
+   **Put key on chain** for the device, make some sniffs, then press **Anchor now**.
+4. Open a certificate. The buyer page shows three ticks, all checked on the phone: the sniff matches the certificate,
+   the device key read from the chain signed it, and the Merkle proof leads to the root stored in the contract.
+5. For Polygon Amoy, deploy with `npm run deploy:amoy` in `nafha-chain` and use chain ID 80002 and an Amoy RPC.
+
+Tested on 5 Nov against a local Hardhat deployment: register key → anchor batch → all three buyer checks pass, and a
+certificate with a changed product name fails the Merkle check. Hashes, leaves and roots match `nafha-chain` exactly.
+
+## NFC seals (NTAG 424 DNA)
+
+1. Program each tag with NXP TagXplorer (PC + USB reader) or TagWriter (Android): SDM on, mirror UID + counter
+   (encrypted PICC data) and CMAC, URL `<APP_URL>/t?picc_data=00000000000000000000000000000000&cmac=0000000000000000`.
+2. Put the tag keys in `SUN_K_META` and `SUN_K_FILE`. Never ship tags with the factory zero keys.
+3. As brand, link each tag's UID to a lot. A tap opens the lot's certificate with a green "seal is genuine" line;
+   a copied link fails because its counter was already used.
+
+The check is a copy of `nafha-chain/lib/sun.js` and passes NXP's AN12196 example tap.
+
 ## Deploy (when you want a public link)
 
 Push this folder to GitHub, import it at vercel.com, and add the same four environment variables
@@ -56,13 +82,15 @@ Push this folder to GitHub, import it at vercel.com, and add the same four envir
 | `app/c/[id]` | The buyer's certificate page (public) |
 | `app/l/[code]` | A lot label's QR lands here and jumps to the newest certificate |
 | `supabase/schema.sql` | All tables, roles and security rules |
+| `lib/chain/` | Certificate body, Merkle batch and buyer checks (port of `nafha-chain/lib`), contract reads and writes |
+| `app/c/[id]/ChainCheck.tsx` | The three checks on the buyer's phone, reading the chain directly |
+| `app/t` + `lib/sun.ts` | NFC seal tap check (NTAG 424 DNA SUN) |
 | `scripts/` | Fake device and device key maker |
 
 ## Next hooks (from the week-1 plan)
 
 - **Real device:** the ESP32 calls `GET /api/nonce?deviceId=…`, sniffs, signs with the ATECC608, and POSTs the record to `/api/ingest`.
 - **Model:** run `nafha serve --release <dir>` from `nafha-ml` and set `CLASSIFIER_URL`. Certificates only go out when the service says `certifiable`.
-- **Blockchain:** batch `record_hash` values into a Merkle tree and anchor with `nafha-chain/lib/merkle.js`, then
-  have the buyer page read the root from the contract with viem (`nafha-chain/lib/certificate.js` has the checks).
-- **NFC seal:** add `/v` that checks the NTAG 424 tap URL with `nafha-chain/lib/sun.js`.
+- **Escrow:** the buyer and brand wallet screens for `NafhaEscrow` (optional add-on) aren't built yet.
+- **Automatic anchoring:** right now someone presses "Anchor now". A Vercel cron calling it every hour would also work.
 - **Look:** colours live in `tailwind.config.ts`. Swap in the new brand when it's ready.

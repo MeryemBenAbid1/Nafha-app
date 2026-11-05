@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { requireRole, shortId } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
+import { issueCertificate } from "@/lib/issue";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // The expert decides what an UNKNOWN sniff really was. Anything but UNKNOWN gets a certificate.
@@ -13,10 +14,14 @@ export async function reviewVerdict(formData: FormData) {
     .from("verdicts")
     .update({ label, status: "confirmed", reviewed_by: me.id, reviewed_at: new Date().toISOString() })
     .eq("id", verdictId)
-    .select("id, readings(lot_code)")
+    .select("id, model_version, readings(lot_code, record)")
     .single();
   if (v && label !== "UNKNOWN") {
-    await db.from("certificates").insert({ id: shortId(), verdict_id: v.id, lot_code: (v as any).readings?.lot_code ?? null });
+    const r = (v as any).readings;
+    await issueCertificate(db, {
+      verdictId: v.id, verdict: label as "GENUINE" | "DILUTED" | "SYNTHETIC",
+      modelVersion: `${v.model_version ?? "?"}+expert`, record: r.record, lotCode: r.lot_code ?? null,
+    });
   }
   revalidatePath("/expert");
 }

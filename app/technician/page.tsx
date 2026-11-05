@@ -4,15 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import LiveRefresh from "@/components/LiveRefresh";
 import VerdictBadge from "@/components/VerdictBadge";
 import Sparkline from "@/components/Sparkline";
-import { setActiveLot } from "./actions";
+import { anchorNow, registerDevice, setActiveLot } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function Technician() {
-  await requireRole("technician");
+export default async function Technician({ searchParams }: { searchParams: Promise<{ msg?: string }> }) {
+  const me = await requireRole("technician");
+  const { msg } = await searchParams;
   const supabase = await createClient();
+  const { count: waiting } = await supabase.from("certificates").select("id", { count: "exact", head: true }).is("batch_id", null);
   const [{ data: devices }, { data: lots }, { data: readings }] = await Promise.all([
-    supabase.from("devices").select("id, name, active_lot_code, last_counter").order("id"),
+    supabase.from("devices").select("id, name, active_lot_code, last_counter, chain_tx").order("id"),
     supabase.from("lots").select("code, product").order("created_at", { ascending: false }),
     supabase
       .from("readings")
@@ -27,6 +29,18 @@ export default async function Technician() {
         <h1 className="text-2xl font-semibold">Technician</h1>
         <LiveRefresh tables={["readings", "verdicts"]} />
       </div>
+
+      {msg && <p className="card break-all text-sm">{msg}</p>}
+
+      <section className="card flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Blockchain</h2>
+          <p className="text-sm text-stone-500">{waiting ?? 0} certificates waiting to be anchored in the next batch.</p>
+        </div>
+        <form action={anchorNow}>
+          <button className="btn" disabled={!waiting}>Anchor now</button>
+        </form>
+      </section>
 
       <section className="card">
         <h2 className="mb-3 font-semibold">Devices</h2>
@@ -47,6 +61,13 @@ export default async function Technician() {
               </select>
               <button className="btn-light">Set</button>
               <span className="text-xs text-stone-400">{d.last_counter + 1} sniffs so far</span>
+              {d.chain_tx ? (
+                <span className="text-xs text-genuine">key on chain</span>
+              ) : me.role === "admin" ? (
+                <button formAction={registerDevice} className="btn-light">Put key on chain</button>
+              ) : (
+                <span className="text-xs text-stone-400">key not on chain yet (admin)</span>
+              )}
             </form>
           ))}
         </div>

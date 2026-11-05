@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { appUrl, qrDataUrl } from "@/lib/qr";
 import VerdictBadge from "@/components/VerdictBadge";
-import SignatureCheck from "./SignatureCheck";
+import ChainCheck from "./ChainCheck";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +14,19 @@ const EXPLAIN: Record<string, string> = {
 };
 
 // The page a buyer sees after scanning the QR code. No login.
-export default async function Certificate({ params }: { params: Promise<{ id: string }> }) {
+export default async function Certificate({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tap?: string }>;
+}) {
   const { id } = await params;
+  const { tap } = await searchParams;
   const db = createAdminClient();
   const { data: cert } = await db
     .from("certificates")
-    .select("id, created_at, batch_root, anchor_tx, lot_code, lots(code, product, brand, origin), verdicts(label, confidence, model_version, status, readings(record, captured_at, device_id, devices(public_key)))")
+    .select("id, created_at, body, batch_id, proof, batch_root, anchor_tx, lot_code, lots(code, product, brand, origin), verdicts(label, confidence, model_version, status, readings(record, captured_at, device_id))")
     .eq("id", id)
     .single();
   if (!cert) notFound();
@@ -29,8 +36,19 @@ export default async function Certificate({ params }: { params: Promise<{ id: st
   const reading = v.readings;
   const qr = await qrDataUrl(appUrl(`/c/${c.id}`));
 
+  // A seal tap only counts if the tap row exists, belongs to this lot, and is fresh (made by /t a moment ago).
+  let seal: { counter: number } | null = null;
+  if (tap) {
+    const { data: t } = await db.from("seal_taps").select("counter, created_at, nfc_tags(lot_code)").eq("id", tap).maybeSingle();
+    const fresh = t && Date.now() - new Date(t.created_at).getTime() < 5 * 60 * 1000;
+    if (fresh && (t as any).nfc_tags?.lot_code === c.lot_code) seal = { counter: t.counter };
+  }
+
   return (
     <div className="mx-auto max-w-md space-y-4">
+      {seal && (
+        <div className="card border-genuine text-sm text-genuine">✓ The NFC seal on this bottle is genuine (tap #{seal.counter}).</div>
+      )}
       <div className="card space-y-3 text-center">
         <p className="text-xs uppercase tracking-widest text-stone-500">Nafha certificate</p>
         <VerdictBadge label={v.label} size="lg" />
@@ -53,12 +71,11 @@ export default async function Certificate({ params }: { params: Promise<{ id: st
         <p className="text-sm text-stone-600">
           Tested on device <span className="font-mono">{reading.device_id}</span> at {new Date(reading.captured_at).toLocaleString()}.
         </p>
-        <SignatureCheck record={reading.record} publicKey={reading.devices.public_key} />
-        <p className="text-sm text-stone-500">
-          {c.anchor_tx
-            ? <>Anchored on Polygon: <a className="underline" href={`https://amoy.polygonscan.com/tx/${c.anchor_tx}`}>{c.anchor_tx.slice(0, 12)}…</a></>
-            : "On-chain anchor: not yet. It's added once the batch is anchored."}
-        </p>
+        {c.body ? (
+          <ChainCheck body={c.body} record={reading.record} batchId={c.batch_id} proof={c.proof} tx={c.anchor_tx} />
+        ) : (
+          <p className="text-sm text-stone-500">This certificate was issued before on-chain proofs were added.</p>
+        )}
         <p className="text-xs text-stone-400">Model {v.model_version}</p>
       </div>
 

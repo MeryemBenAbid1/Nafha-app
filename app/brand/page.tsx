@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createLot } from "./actions";
+import { createLot, linkSeal } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export default async function Brand() {
   const supabase = await createClient();
   const { data: lots } = await supabase
     .from("lots")
-    .select("code, product, brand, origin, created_at, readings(count)")
+    .select("code, product, brand, origin, created_at, readings(count), nfc_tags(count)")
     .order("created_at", { ascending: false });
 
   return (
@@ -37,6 +37,22 @@ export default async function Brand() {
         <button className="btn sm:col-span-5 sm:w-fit">Register lot</button>
       </form>
 
+      {!!lots?.length && (
+        <form action={linkSeal} className="card flex flex-wrap items-end gap-3">
+          <div>
+            <label className="label">NFC seal UID (7 bytes)</label>
+            <input name="uid" required placeholder="04 DE 5F 1E AC C0 40" className="input font-mono" />
+          </div>
+          <div>
+            <label className="label">Lot</label>
+            <select name="lotCode" className="input">
+              {lots.map((l: any) => <option key={l.code}>{l.code}</option>)}
+            </select>
+          </div>
+          <button className="btn-light">Link seal</button>
+        </form>
+      )}
+
       <section className="card overflow-x-auto">
         <h2 className="mb-3 font-semibold">Lots</h2>
         {!lots?.length && <p className="text-sm text-stone-500">No lots yet.</p>}
@@ -47,7 +63,7 @@ export default async function Brand() {
                 <td className="py-2 pr-3 font-mono">{l.code}</td>
                 <td className="pr-3">{l.product}</td>
                 <td className="pr-3 text-stone-500">{l.brand}{l.origin ? ` · ${l.origin}` : ""}</td>
-                <td className="pr-3 text-stone-500">{l.readings?.[0]?.count ?? 0} sniffs</td>
+                <td className="pr-3 text-stone-500">{l.readings?.[0]?.count ?? 0} sniffs · {l.nfc_tags?.[0]?.count ?? 0} seals</td>
                 <td><Link href={`/brand/labels/${encodeURIComponent(l.code)}`} className="underline">Print labels</Link></td>
               </tr>
             ))}
