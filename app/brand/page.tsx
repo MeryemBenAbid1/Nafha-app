@@ -1,0 +1,59 @@
+import Link from "next/link";
+import { requireRole } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { createLot } from "./actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function Brand() {
+  await requireRole("brand");
+  const supabase = await createClient();
+  const { data: lots } = await supabase
+    .from("lots")
+    .select("code, product, brand, origin, created_at, readings(count)")
+    .order("created_at", { ascending: false });
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold">Brand</h1>
+
+      <form action={createLot} className="card grid gap-3 sm:grid-cols-5 sm:items-end">
+        <div>
+          <label className="label">Lot code</label>
+          <input name="code" required placeholder="LOT-0042" className="input" />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="label">Product</label>
+          <input name="product" required placeholder="Cambodian oud oil, 3 ml" className="input" />
+        </div>
+        <div>
+          <label className="label">Brand</label>
+          <input name="brand" required className="input" />
+        </div>
+        <div>
+          <label className="label">Origin</label>
+          <input name="origin" placeholder="Cambodia" className="input" />
+        </div>
+        <button className="btn sm:col-span-5 sm:w-fit">Register lot</button>
+      </form>
+
+      <section className="card overflow-x-auto">
+        <h2 className="mb-3 font-semibold">Lots</h2>
+        {!lots?.length && <p className="text-sm text-stone-500">No lots yet.</p>}
+        <table className="w-full text-sm">
+          <tbody>
+            {lots?.map((l: any) => (
+              <tr key={l.code} className="border-t border-stone-100">
+                <td className="py-2 pr-3 font-mono">{l.code}</td>
+                <td className="pr-3">{l.product}</td>
+                <td className="pr-3 text-stone-500">{l.brand}{l.origin ? ` · ${l.origin}` : ""}</td>
+                <td className="pr-3 text-stone-500">{l.readings?.[0]?.count ?? 0} sniffs</td>
+                <td><Link href={`/brand/labels/${encodeURIComponent(l.code)}`} className="underline">Print labels</Link></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  );
+}
