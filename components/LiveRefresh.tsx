@@ -18,8 +18,8 @@ export default function LiveRefresh({ tables }: { tables: string[] }) {
     };
   }, [router, tables]);
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-stone-500">
-      <span className="h-2 w-2 animate-pulse rounded-full bg-genuine" /> live
+    <span className="inline-flex items-center gap-1 text-xs text-plum/60">
+      <span className="h-2 w-2 animate-pulse rounded-full bg-gold" /> live
     </span>
   );
 }

@@ -15,7 +15,7 @@ export default async function Brand() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Brand</h1>
+      <h1 className="text-3xl">Brand</h1>
 
       <form action={createLot} className="card grid gap-3 sm:grid-cols-5 sm:items-end">
         <div>
@@ -54,16 +54,16 @@ export default async function Brand() {
       )}
 
       <section className="card overflow-x-auto">
-        <h2 className="mb-3 font-semibold">Lots</h2>
-        {!lots?.length && <p className="text-sm text-stone-500">No lots yet.</p>}
+        <h2 className="mb-3 text-xl">Lots</h2>
+        {!lots?.length && <p className="text-sm text-plum/60">No lots yet.</p>}
         <table className="w-full text-sm">
           <tbody>
             {lots?.map((l: any) => (
-              <tr key={l.code} className="border-t border-stone-100">
+              <tr key={l.code} className="border-t border-sand/50">
                 <td className="py-2 pr-3 font-mono">{l.code}</td>
                 <td className="pr-3">{l.product}</td>
-                <td className="pr-3 text-stone-500">{l.brand}{l.origin ? ` · ${l.origin}` : ""}</td>
-                <td className="pr-3 text-stone-500">{l.readings?.[0]?.count ?? 0} sniffs · {l.nfc_tags?.[0]?.count ?? 0} seals</td>
+                <td className="pr-3 text-plum/60">{l.brand}{l.origin ? ` · ${l.origin}` : ""}</td>
+                <td className="pr-3 text-plum/60">{l.readings?.[0]?.count ?? 0} sniffs · {l.nfc_tags?.[0]?.count ?? 0} seals</td>
                 <td><Link href={`/brand/labels/${encodeURIComponent(l.code)}`} className="underline">Print labels</Link></td>
               </tr>
             ))}

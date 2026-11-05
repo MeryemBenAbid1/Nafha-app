@@ -30,7 +30,7 @@ export default function Login() {
 
   return (
     <form onSubmit={submit} className="card mx-auto mt-8 max-w-sm space-y-4">
-      <h1 className="text-xl font-semibold">{mode === "in" ? "Staff login" : "Create a staff account"}</h1>
+      <h1 className="text-2xl">{mode === "in" ? "Staff login" : "Create a staff account"}</h1>
       <div>
         <label className="label">Email</label>
         <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -53,7 +53,7 @@ export default function Login() {
       <button className="btn w-full" disabled={busy}>
         {busy ? "Please wait…" : mode === "in" ? "Log in" : "Sign up"}
       </button>
-      <button type="button" className="w-full text-sm text-stone-500 underline" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+      <button type="button" className="w-full text-sm text-plum/60 underline" onClick={() => setMode(mode === "in" ? "up" : "in")}>
         {mode === "in" ? "New here? Create an account" : "Have an account? Log in"}
       </button>
     </form>

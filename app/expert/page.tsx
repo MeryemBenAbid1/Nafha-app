@@ -30,17 +30,17 @@ export default async function Expert() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Expert</h1>
+        <h1 className="text-3xl">Expert</h1>
         <LiveRefresh tables={["verdicts"]} />
       </div>
 
       <section className="card">
-        <h2 className="mb-1 font-semibold">Needs your review ({queue?.length ?? 0})</h2>
-        <p className="mb-3 text-sm text-stone-500">The model didn't recognise these. Smell the sample and decide.</p>
-        {!queue?.length && <p className="text-sm text-stone-400">Nothing waiting.</p>}
+        <h2 className="mb-1 text-xl">Needs your review ({queue?.length ?? 0})</h2>
+        <p className="mb-3 text-sm text-plum/60">The model didn't recognise these. Smell the sample and decide.</p>
+        {!queue?.length && <p className="text-sm text-plum/45">Nothing waiting.</p>}
         <div className="space-y-3">
           {queue?.map((v: any) => (
-            <form key={v.id} action={reviewVerdict} className="flex flex-wrap items-center gap-3 border-t border-stone-100 pt-3">
+            <form key={v.id} action={reviewVerdict} className="flex flex-wrap items-center gap-3 border-t border-sand/50 pt-3">
               <input type="hidden" name="verdictId" value={v.id} />
               <Sparkline trace={v.readings.record.trace} />
               <span className="text-sm">{v.readings.lot_code ?? "no lot"} · {v.readings.device_id}</span>
@@ -54,8 +54,8 @@ export default async function Expert() {
       </section>
 
       <section className="card">
-        <h2 className="mb-1 font-semibold">Reference library</h2>
-        <p className="mb-3 text-sm text-stone-500">
+        <h2 className="mb-1 text-xl">Reference library</h2>
+        <p className="mb-3 text-sm text-plum/60">
           {Object.keys(counts).length ? Object.entries(counts).map(([k, n]) => `${k}: ${n}`).join(" · ") : "Empty so far."}
         </p>
         <div className="space-y-2">

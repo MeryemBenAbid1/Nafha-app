@@ -2,10 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-stone-50 text-stone-900; }
-.card { @apply rounded-xl border border-stone-200 bg-white p-4 shadow-sm; }
-.btn { @apply inline-flex items-center justify-center rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700 disabled:opacity-50; }
-.btn-light { @apply inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium hover:bg-stone-100; }
-.input { @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm; }
-.label { @apply mb-1 block text-xs font-medium uppercase tracking-wide text-stone-500; }
-@media print { .no-print { display: none !important; } }
+@layer base {
+  body { @apply bg-cream font-sans text-plum antialiased; }
+  h1, h2 { @apply font-display font-normal tracking-tight; }
+}
+.card { @apply rounded-2xl border border-sand/70 bg-white/80 p-4 shadow-[0_1px_2px_rgba(74,45,45,0.06)]; }
+.btn { @apply inline-flex items-center justify-center rounded-full bg-gold px-5 py-2 text-sm font-medium text-white transition hover:bg-[#ad7a3f] disabled:opacity-40; }
+.btn-light { @apply inline-flex items-center justify-center rounded-full border border-sand bg-white px-4 py-2 text-sm font-medium text-plum transition hover:bg-cream; }
+.input { @apply w-full rounded-xl border border-sand bg-white px-3 py-2 text-sm text-plum placeholder:text-plum/40 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/20; }
+.label { @apply mb-1 block text-[11px] font-medium uppercase tracking-[0.14em] text-plum/60; }
+.wordmark { @apply font-display uppercase tracking-[0.22em] text-plum; }
+@media print { .no-print { display: none !important; } body { background: white; } }

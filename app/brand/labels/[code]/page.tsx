@@ -17,14 +17,14 @@ export default async function Labels({ params }: { params: Promise<{ code: strin
   return (
     <div>
       <div className="no-print mb-4 flex items-center justify-between">
-        <p className="text-sm text-stone-500">Print with your browser (Ctrl/Cmd + P). Labels link to {url}</p>
+        <p className="text-sm text-plum/60">Print with your browser (Ctrl/Cmd + P). Labels link to {url}</p>
       </div>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
         {Array.from({ length: 24 }).map((_, i) => (
-          <div key={i} className="flex flex-col items-center rounded border border-dashed border-stone-300 bg-white p-2 text-center">
+          <div key={i} className="flex flex-col items-center rounded border border-dashed border-sand bg-white p-2 text-center">
             <img src={qr} alt={`QR for ${lot.code}`} className="h-24 w-24" />
             <div className="mt-1 text-xs font-semibold">Nafha verified</div>
-            <div className="font-mono text-[10px] text-stone-500">{lot.code}</div>
+            <div className="font-mono text-[10px] text-plum/60">{lot.code}</div>
           </div>
         ))}
       </div>

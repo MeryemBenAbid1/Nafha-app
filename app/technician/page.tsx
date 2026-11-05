@@ -26,7 +26,7 @@ export default async function Technician({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Technician</h1>
+        <h1 className="text-3xl">Technician</h1>
         <LiveRefresh tables={["readings", "verdicts"]} />
       </div>
 
@@ -34,8 +34,8 @@ export default async function Technician({ searchParams }: { searchParams: Promi
 
       <section className="card flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold">Blockchain</h2>
-          <p className="text-sm text-stone-500">{waiting ?? 0} certificates waiting to be anchored in the next batch.</p>
+          <h2 className="text-xl">Blockchain</h2>
+          <p className="text-sm text-plum/60">{waiting ?? 0} certificates waiting to be anchored in the next batch.</p>
         </div>
         <form action={anchorNow}>
           <button className="btn" disabled={!waiting}>Anchor now</button>
@@ -43,14 +43,14 @@ export default async function Technician({ searchParams }: { searchParams: Promi
       </section>
 
       <section className="card">
-        <h2 className="mb-3 font-semibold">Devices</h2>
-        {!devices?.length && <p className="text-sm text-stone-500">No devices yet. See the README: run npm run device:key.</p>}
+        <h2 className="mb-3 text-xl">Devices</h2>
+        {!devices?.length && <p className="text-sm text-plum/60">No devices yet. See the README: run npm run device:key.</p>}
         <div className="space-y-2">
           {devices?.map((d) => (
             <form key={d.id} action={setActiveLot} className="flex flex-wrap items-center gap-3">
               <input type="hidden" name="deviceId" value={d.id} />
               <span className="w-28 font-mono text-sm">{d.id}</span>
-              <span className="text-sm text-stone-500">testing lot</span>
+              <span className="text-sm text-plum/60">testing lot</span>
               <select name="lotCode" defaultValue={d.active_lot_code ?? ""} className="input w-auto">
                 <option value="">none</option>
                 {lots?.map((l) => (
@@ -60,13 +60,13 @@ export default async function Technician({ searchParams }: { searchParams: Promi
                 ))}
               </select>
               <button className="btn-light">Set</button>
-              <span className="text-xs text-stone-400">{d.last_counter + 1} sniffs so far</span>
+              <span className="text-xs text-plum/45">{d.last_counter + 1} sniffs so far</span>
               {d.chain_tx ? (
                 <span className="text-xs text-genuine">key on chain</span>
               ) : me.role === "admin" ? (
                 <button formAction={registerDevice} className="btn-light">Put key on chain</button>
               ) : (
-                <span className="text-xs text-stone-400">key not on chain yet (admin)</span>
+                <span className="text-xs text-plum/45">key not on chain yet (admin)</span>
               )}
             </form>
           ))}
@@ -74,26 +74,26 @@ export default async function Technician({ searchParams }: { searchParams: Promi
       </section>
 
       <section className="card overflow-x-auto">
-        <h2 className="mb-3 font-semibold">Latest sniffs</h2>
-        {!readings?.length && <p className="text-sm text-stone-500">Nothing yet. Start the fake device: npm run device:fake -- --every 5</p>}
+        <h2 className="mb-3 text-xl">Latest sniffs</h2>
+        {!readings?.length && <p className="text-sm text-plum/60">Nothing yet. Start the fake device: npm run device:fake -- --every 5</p>}
         <table className="w-full text-sm">
           <tbody>
             {readings?.map((r: any) => {
               const v = r.verdicts?.[0];
               const cert = v?.certificates?.[0];
               return (
-                <tr key={r.id} className="border-t border-stone-100">
-                  <td className="py-2 pr-3 text-stone-500">{new Date(r.captured_at).toLocaleTimeString()}</td>
+                <tr key={r.id} className="border-t border-sand/50">
+                  <td className="py-2 pr-3 text-plum/60">{new Date(r.captured_at).toLocaleTimeString()}</td>
                   <td className="pr-3 font-mono text-xs">{r.device_id} #{r.counter}</td>
-                  <td className="pr-3">{r.lot_code ?? <span className="text-stone-400">no lot</span>}</td>
+                  <td className="pr-3">{r.lot_code ?? <span className="text-plum/45">no lot</span>}</td>
                   <td className="pr-3"><Sparkline trace={r.record.trace} /></td>
                   <td className="pr-3">{v ? <VerdictBadge label={v.label} /> : "…"}</td>
-                  <td className="pr-3 text-stone-500">{v ? `${Math.round(v.confidence * 100)}%` : ""}</td>
+                  <td className="pr-3 text-plum/60">{v ? `${Math.round(v.confidence * 100)}%` : ""}</td>
                   <td>
                     {cert ? (
                       <Link className="underline" href={`/c/${cert.id}`}>certificate</Link>
                     ) : v?.status === "needs_review" ? (
-                      <span className="text-xs text-stone-500">waiting for expert</span>
+                      <span className="text-xs text-plum/60">waiting for expert</span>
                     ) : null}
                   </td>
                 </tr>

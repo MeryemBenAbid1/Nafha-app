@@ -6,17 +6,21 @@ export default async function Home() {
   const profile = await getProfile();
   if (profile) redirect(HOME[profile.role]);
   return (
-    <div className="mx-auto max-w-md space-y-6 py-12 text-center">
-      <h1 className="text-3xl font-semibold">Real oud, proven.</h1>
-      <p className="text-stone-600">
-        Nafha checks oud with a signed electronic nose. Buyers scan the QR code on the bottle to see the certificate.
+    <div className="mx-auto max-w-lg space-y-8 py-16 text-center">
+      <div className="space-y-3">
+        <p className="wordmark text-5xl sm:text-6xl">Nafha</p>
+        <p className="font-arabic text-3xl text-plum/80">نَفْحَة</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] text-plum/60">Real oud · proven</p>
+      </div>
+      <p className="text-plum/80">
+        Nafha checks oud with a signed electronic nose. Scan the QR code or tap the seal on the bottle to see its
+        certificate. No app needed.
       </p>
       <div className="flex justify-center gap-3">
         <Link href="/login" className="btn">
           Staff login
         </Link>
       </div>
-      <p className="text-sm text-stone-500">Buying oud? Scan the QR code or tap the seal with your phone. No app needed.</p>
     </div>
   );
 }

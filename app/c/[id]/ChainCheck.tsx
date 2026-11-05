@@ -13,7 +13,7 @@ type Status = "checking" | "pass" | "fail" | "pending";
 type Props = { body: CertificateBody; record: DeviceRecord; batchId: string | null; proof: string[] | null; tx: string | null };
 
 const ICON: Record<Status, string> = { checking: "…", pass: "✓", fail: "✗", pending: "○" };
-const COLOR: Record<Status, string> = { checking: "text-stone-500", pass: "text-genuine", fail: "text-synthetic", pending: "text-stone-500" };
+const COLOR: Record<Status, string> = { checking: "text-plum/60", pass: "text-genuine", fail: "text-synthetic", pending: "text-plum/60" };
 
 export default function ChainCheck({ body, record, batchId, proof, tx }: Props) {
   const [checks, setChecks] = useState<{ name: string; status: Status; note: string }[]>([]);
@@ -64,7 +64,7 @@ export default function ChainCheck({ body, record, batchId, proof, tx }: Props) 
           <span className={`w-4 font-bold ${COLOR[c.status]}`}>{ICON[c.status]}</span>
           <div>
             <p className={COLOR[c.status]}>{c.name}</p>
-            <p className="break-all font-mono text-xs text-stone-400">{c.note}</p>
+            <p className="break-all font-mono text-xs text-plum/45">{c.note}</p>
           </div>
         </div>
       ))}
