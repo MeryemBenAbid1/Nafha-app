@@ -17,7 +17,10 @@ export default async function Home() {
         certificate. No app needed.
       </p>
       <div className="flex justify-center gap-3">
-        <Link href="/login" className="btn">
+        <Link href="/join" className="btn">
+          Join the waitlist
+        </Link>
+        <Link href="/login" className="btn-light">
           Staff login
         </Link>
       </div>
