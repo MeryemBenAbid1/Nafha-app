@@ -9,7 +9,7 @@ export async function reviewVerdict(formData: FormData) {
   const me = await requireRole("expert");
   const verdictId = String(formData.get("verdictId"));
   const label = String(formData.get("label"));
-  const db = createAdminClient();
+  const db = (await createAdminClient());
   const { data: v } = await db
     .from("verdicts")
     .update({ label, status: "confirmed", reviewed_by: me.id, reviewed_at: new Date().toISOString() })
@@ -29,7 +29,7 @@ export async function reviewVerdict(formData: FormData) {
 // Add a sniff to the reference library the model compares against (no retraining needed).
 export async function addToLibrary(formData: FormData) {
   const me = await requireRole("expert");
-  await createAdminClient()
+  await (await createAdminClient())
     .from("reference_library")
     .insert({ reading_id: String(formData.get("readingId")), class: String(formData.get("class")), added_by: me.id });
   revalidatePath("/expert");

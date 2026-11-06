@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   const deviceId = new URL(req.url).searchParams.get("deviceId");
   if (!deviceId) return NextResponse.json({ error: "deviceId is required" }, { status: 400 });
   const nonce = randomBytes(16).toString("hex");
-  const { error } = await createAdminClient().from("nonces").insert({ nonce, device_id: deviceId });
+  const { error } = await (await createAdminClient()).from("nonces").insert({ nonce, device_id: deviceId });
   if (error) return NextResponse.json({ error: "unknown device" }, { status: 404 });
   return NextResponse.json({ nonce });
 }

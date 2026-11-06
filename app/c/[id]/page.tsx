@@ -23,7 +23,7 @@ export default async function Certificate({
 }) {
   const { id } = await params;
   const { tap } = await searchParams;
-  const db = createAdminClient();
+  const db = (await createAdminClient());
   const { data: cert } = await db
     .from("certificates")
     .select("id, created_at, body, batch_id, proof, batch_root, anchor_tx, lot_code, lots(code, product, brand, origin), verdicts(label, confidence, model_version, status, readings(record, captured_at, device_id))")
@@ -34,7 +34,7 @@ export default async function Certificate({
   const c: any = cert;
   const v = c.verdicts;
   const reading = v.readings;
-  const qr = await qrDataUrl(appUrl(`/c/${c.id}`));
+  const qr = await qrDataUrl(await appUrl(`/c/${c.id}`));
 
   // A seal tap only counts if the tap row exists, belongs to this lot, and is fresh (made by /t a moment ago).
   let seal: { counter: number } | null = null;

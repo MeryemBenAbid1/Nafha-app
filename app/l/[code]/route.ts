@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // A lot label was scanned: send the buyer to that lot's newest certificate.
 export async function GET(request: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const { data } = await createAdminClient()
+  const { data } = await (await createAdminClient())
     .from("certificates")
     .select("id")
     .eq("lot_code", decodeURIComponent(code))

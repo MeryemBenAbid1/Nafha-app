@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   }
   if (!result.macOk) return fail(req, "The seal's signature is wrong. This may be a fake seal.");
 
-  const db = createAdminClient();
+  const db = (await createAdminClient());
   const { data: tag } = await db.from("nfc_tags").select("uid, lot_code, last_counter").eq("uid", result.uid).maybeSingle();
   if (!tag) return fail(req, "This seal isn't registered to any Nafha product.");
   if (result.counter <= tag.last_counter) return fail(req, "This tap was already used. Someone may have copied the seal's link.");

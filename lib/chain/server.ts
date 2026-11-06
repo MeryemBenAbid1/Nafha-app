@@ -16,7 +16,7 @@ function wallet() {
 
 /** Put every not-yet-anchored certificate into one Merkle batch and anchor its root. */
 export async function anchorPending() {
-  const db = createAdminClient();
+  const db = (await createAdminClient());
   const { data: certs } = await db.from("certificates").select("id, body").is("batch_id", null).not("body", "is", null).order("created_at");
   if (!certs?.length) return { anchored: 0 };
 
@@ -46,6 +46,6 @@ export async function registerDeviceOnChain(deviceId: string, publicKeyHex: stri
     address: chainConfig.address, abi: anchorAbi, functionName: "registerDevice", args: [idToBytes32(deviceId), qx, qy],
   });
   await publicClient().waitForTransactionReceipt({ hash: tx });
-  await createAdminClient().from("devices").update({ chain_tx: tx }).eq("id", deviceId);
+  await (await createAdminClient()).from("devices").update({ chain_tx: tx }).eq("id", deviceId);
   return tx;
 }

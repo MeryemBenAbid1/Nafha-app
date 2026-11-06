@@ -11,7 +11,7 @@ export default async function Labels({ params }: { params: Promise<{ code: strin
   const supabase = await createClient();
   const { data: lot } = await supabase.from("lots").select("*").eq("code", lotCode).single();
   if (!lot) return <p>Lot not found.</p>;
-  const url = appUrl(`/l/${encodeURIComponent(lot.code)}`);
+  const url = await appUrl(`/l/${encodeURIComponent(lot.code)}`);
   const qr = await qrDataUrl(url);
 
   return (

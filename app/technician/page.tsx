@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import LiveRefresh from "@/components/LiveRefresh";
 import VerdictBadge from "@/components/VerdictBadge";
 import Sparkline from "@/components/Sparkline";
-import { anchorNow, registerDevice, setActiveLot } from "./actions";
+import { anchorNow, registerDevice, setActiveLot, simulateSniff } from "./actions";
+import { demoDeviceReady } from "@/lib/fake-device";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,25 @@ export default async function Technician({ searchParams }: { searchParams: Promi
       </div>
 
       {msg && <p className="card break-all text-sm">{msg}</p>}
+
+      {demoDeviceReady() && (
+        <form action={simulateSniff} className="card flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl">Simulate a sniff</h2>
+            <p className="text-sm text-plum/60">Until the sensors arrive, a built-in fake device makes signed, made-up readings.</p>
+          </div>
+          <div className="flex gap-2">
+            <select name="blend" className="input w-auto">
+              <option value="random">Random sample</option>
+              <option value="genuine">Genuine oud</option>
+              <option value="diluted">Diluted oud</option>
+              <option value="synthetic">Synthetic</option>
+              <option value="unknown">Unknown</option>
+            </select>
+            <button className="btn">Sniff</button>
+          </div>
+        </form>
+      )}
 
       <section className="card flex flex-wrap items-center justify-between gap-3">
         <div>
